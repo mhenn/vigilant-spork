@@ -4,10 +4,6 @@ import { Application, Router, walk } from "./deps.ts";
 const app = new Application();
 const router = new Router();
 
-router.get("/", (context) => {
-  context.response.body = "Hello Deno!";
-});
-
 router.get("/pdf", async (context) => {
   const files: string[] = [];
   for await (const entry of walk("./res", {
