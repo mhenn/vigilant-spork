@@ -5,33 +5,35 @@ const app = new Application();
 const router = new Router();
 
 router.get("/pdf", async (context) => {
+  const files = await getResFiles();
+  context.response.body = files.map((f: string) => f.split("/").pop());
+});
+
+router.get("/pdf/:name", async (context) => {
+  const files = await getResFiles();
+  const searchResult = files.filter((f) => f.includes(context.params.name));
+  if (searchResult.length > 0 && context.params.name) {
+    const searchedFiled = searchResult[0];
+    const fileContent = await Deno.readFile(searchedFiled);
+    context.response.headers.set("Content-Type", "application/pdf");
+    context.response.headers.set(
+      "Content-Disposition",
+      `attachment; filename="${searchedFiled.split("/").pop()}"`
+    );
+    context.response.body = fileContent;
+  }
+});
+
+async function getResFiles(): Promise<string[]> {
   const files: string[] = [];
   for await (const entry of walk("./res", {
     includeDirs: false,
     includeFiles: true,
   })) {
-    files.push(entry.path.split("/").pop() as string);
+    files.push(entry.path as string);
   }
-  context.response.body = files;
-});
-
-router.get("/pdf/:name", async (context) => {
-  for await (const entry of walk("./res", {
-    includeDirs: false,
-    includeFiles: true,
-  })) {
-    if (entry.path.includes(context.params.name)) {
-      const fileContent = await Deno.readFile(entry.path);
-      context.response.headers.set("Content-Type", "application/pdf");
-      context.response.headers.set(
-        "Content-Disposition",
-        `attachment; filename="${entry.path.split("/").pop()}"`
-      );
-      context.response.body = fileContent;
-      break;
-    }
-  }
-});
+  return files;
+}
 
 app.use(router.routes());
 app.use(router.allowedMethods());

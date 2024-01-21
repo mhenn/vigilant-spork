@@ -1,9 +1,9 @@
-<script setup>
-import TheWelcome from '../components/TheWelcome.vue'
-</script>
-
 <template>
   <main>
-    <TheWelcome />
+    <SearchTable />
   </main>
 </template>
+
+<script setup>
+import SearchTable from '../components/SearchTable.vue'
+</script>
